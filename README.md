@@ -1,55 +1,54 @@
-```markdown
+
 # graphX
 
 A lightweight 2D framework
 
 ## Installation
-
+```python
 pip install pygame
 ```
-
-Place `graphX.py` in your project dir
+Place `GraphX` folder in your project dir
 
 ## Quick Start
 
 ```python
-import graphX as gx
+from GraphX.framework import *
 
-gx.create_window("My Game", 800, 600)
+create_window("My Game", 800, 600)
 
-player = gx.create_shape("rectangle", 400, 300, width=50, height=50, color=(0, 255, 0))
+player = create_shape("rectangle", 400, 300, width=50, height=50, color=(0, 255, 0))
 
-def on_key():
+def on_space():
     print("Space pressed")
 
-gx.on_key_press(gx.KeyCode.SPACE, on_key)
+on_key_press(KeyCode.SPACE, on_space)
 
-while gx.is_running():
-    gx.update()
+while is_running():
+    update()
 ```
 
 ## Shapes
 
 ### rectangle (rect)
 ```python
-box = gx.create_shape("rectangle", x, y, width=50, height=50, color=(255,0,0), filled=True)
+box = create_shape("rectangle", x, y, width=50, height=50, color=(255,0,0), filled=True)
 ```
 
-### circle (circ)
+### circle (circ, sphere)
 ```python
-circle = gx.create_shape("circle", x, y, radius=25, color=(0,0,255))
-circle = gx.create_shape("circle", x, y, width=50, height=50)
+circle = create_shape("circle", x, y, radius=25, color=(0,0,255))
+circle = create_shape("circle", x, y, width=50, height=50)
 ```
 
 ### oval
 ```python
-oval = gx.create_shape("oval", x, y, radius_x=30, radius_y=20, color=(255,255,0))
-oval = gx.create_shape("oval", x, y, width=60, height=40)
+oval = create_shape("oval", x, y, radius_x=30, radius_y=20, color=(255,255,0))
+oval = create_shape("oval", x, y, width=60, height=40)
 ```
 
 ### pixel
 ```python
-pixel = gx.create_shape("pixel", x, y, color=(255,255,255))
+pixel = create_shape("pixel", x, y, color=(255,255,255))
 ```
 
 ## Shape Properties
@@ -66,14 +65,14 @@ shape.color = (255,0,0)
 shape.apply_texture("sprite_name")
 ```
 
-## input
+## Input
 
 ### keyboard
 ```python
-gx.on_key_press(gx.KeyCode.SPACE, callback)
-gx.on_key_release(gx.KeyCode.ESCAPE, callback)
+on_key_press(KeyCode.SPACE, callback)
+on_key_release(KeyCode.ESCAPE, callback)
 
-if gx.is_key_down(gx.KeyCode.W):
+if is_key_down(KeyCode.W):
     player.y -= 5
 ```
 
@@ -81,86 +80,86 @@ Key codes: `SPACE`, `RETURN`, `ESCAPE`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, 
 
 ### mouse
 ```python
-gx.on_mouse_press(1, callback)   # 1=left, 2=middle, 3=right
-gx.on_mouse_release(1, callback)
-gx.on_mouse_move(callback)
-gx.on_mouse_wheel(callback)
+on_mouse_press(1, callback)   # 1=left, 2=middle, 3=right
+on_mouse_release(1, callback)
+on_mouse_move(callback)
+on_mouse_wheel(callback)
 
-if gx.is_mouse_down(1):
-    pos = gx.get_mouse_position()
+if is_mouse_down(1):
+    pos = get_mouse_position()
 ```
 
-## collision
+## Collision
 
 ```python
-if gx.check_collision(player, enemy):
+if check_collision(player, enemy):
     # handle
 
-direction = gx.get_collision_direction(player, wall)
+direction = get_collision_direction(player, wall)
 
-info = gx.get_collision_info(player, enemy)
+info = get_collision_info(player, enemy)
 # info.direction, info.penetration, info.normal_x, info.normal_y
 
-gx.resolve_collision(player, enemy, mass_a=1, mass_b=2)
+resolve_collision(player, enemy, mass_a=1, mass_b=2)
 
-result = gx.sweep_test(bullet, vx, vy, [enemy1, enemy2])
+result = sweep_test(bullet, vx, vy, [enemy1, enemy2])
 
-hit = gx.raycast(start_x, start_y, end_x, end_y, shapes, ignore_shape=None)
+hit = raycast(start_x, start_y, end_x, end_y, shapes, ignore_shape=None)
+
+nearby = get_nearby_shapes(shape, radius=2)
 ```
 
-## assets
+## Assets
 
 ```python
-gx.load("texture", "sprites/player.png", "player")
-gx.load("sound", "sounds/jump.wav", "jump")
-gx.load("music", "music/theme.ogg", "theme")
-gx.load("font", "fonts/arial.ttf", "main", size=32)
+load("texture", "sprites/player.png", "player")
+load("sound", "sounds/jump.wav", "jump")
+load("music", "music/theme.ogg", "theme")
+load("font", "fonts/arial.ttf", "main", size=32)
 
-texture = gx.get_texture("player")
-sound = gx.get_sound("jump")
-font = gx.get_font("main")
+texture = get_texture("player")
+sound = get_sound("jump")
+font = get_font("main")
 
-gx.play_sound("jump")
-gx.play_music("theme", loops=-1)
-gx.stop_music()
+play_sound("jump")
+play_music("theme", loops=-1)
+stop_music()
 ```
 
-## drawing
+## Drawing
 
 ```python
-gx.draw_text("Hello", None, 100, 100, color=(255,255,255), size=24)
-gx.draw_text("Hello", "main", 100, 150, color=(0,255,0), size=48)
+draw_text("Hello", None, 100, 100, color=(255,255,255), size=24)
+draw_text("Hello", "main", 100, 150, color=(0,255,0), size=48)
 
 def custom_draw():
     # called every frame after shapes
 
-gx.set_draw_callback(custom_draw)
+set_draw_callback(custom_draw)
 
-gx.fill_screen(r, g, b)
+fill_screen(r, g, b)
 ```
 
-## camera
+## Camera
 
 ```python
-gx.set_camera(x, y)
-gx.move_camera(dx, dy)
+set_camera(x, y)
+move_camera(dx, dy)
 ```
 
-## utils
+## Utils
 
 ```python
-gx.set_fps(60)
-delta = gx.get_delta_time()
-gx.wait(ms)
-gx.clear_all()
-gx.quit()
+set_fps(60)
+delta = get_delta_time()
+wait(ms)
+clear_all()
+quit()
 
-# Spatial grid for optimization
-nearby = gx.get_nearby_shapes(shape, radius=2)
-gx.update_spatial_grid(shape)
+update_spatial_grid(shape)
 ```
 
-## API refrences
+## API References
 
 ### Engine Functions
 
@@ -227,7 +226,7 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 | `sweep_test(shape, vx, vy, others)` | Returns CollisionInfo or None |
 | `raycast(x1, y1, x2, y2, shapes, ignore=None)` | Returns CollisionInfo or None |
 | `check_all_collisions(shapes)` | Returns list of collision tuples |
-| `get_nearby_shapes(shape, radius=2)` | Returns set of nearby shapes |
+| `get_nearby_shapes(shape, radius=2)` | Returns list of nearby shapes |
 
 ### Drawing Functions
 
@@ -254,5 +253,5 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 
 ### KeyCode Constants
 
-All pygame key constants are exposed through `gx.KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`.
+All pygame key constants are exposed through `KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`.
 ```
