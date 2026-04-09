@@ -36,7 +36,6 @@ box = create_shape("rectangle", x, y, width=50, height=50, color=(255,0,0), fill
 ### circle (circ, sphere)
 ```python
 circle = create_shape("circle", x, y, radius=25, color=(0,0,255))
-# note: width and height must be equal for circles
 circle = create_shape("circle", x, y, width=50, height=50)
 ```
 
@@ -65,54 +64,35 @@ shape.color = (255,0,0)
 shape.apply_texture("sprite_name")
 ```
 
-## Input
-
-### keyboard
-```python
-# callbacks receive no arguments
-def on_space():
-    print("Space pressed")
-
-on_key_press(KeyCode.SPACE, on_space)
-on_key_release(KeyCode.ESCAPE, on_escape)
-
-# polling works too
-if is_key_down(KeyCode.W):
-    player.y -= 5
-```
-
-Key codes: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`
-
-### mouse
-```python
-# mouse callbacks receive (x, y) position
-def on_left_click(x, y):
-    print(f"clicked at {x}, {y}")
-
-def on_right_click(x, y):
-    print(f"right click at {x}, {y}")
-
-on_mouse_press(1, on_left_click)   # 1=left, 2=middle, 3=right
-on_mouse_release(3, on_right_click)
-
-# mouse move gets (x, y)
-def on_move(x, y):
-    print(f"mouse at {x}, {y}")
-
-on_mouse_move(on_move)
-
-# mouse wheel gets (scroll_x, scroll_y)
-def on_wheel(x, y):
-    print(f"scrolled {x}, {y}")
-
-on_mouse_wheel(on_wheel)
-
-if is_mouse_down(1):
-    pos = get_mouse_position()
-```
-
 ## Collision
 
+### simple collision
+```python
+if player.is_touching(enemy):
+    print("ouch!")
+
+if player.is_touching("borders"):
+    print("hit the edge!")
+
+# check specific edges
+if player.at_left_edge:
+    player.x = 10
+if player.at_right_edge:
+    player.x = 790
+if player.at_top_edge:
+    player.y = 10
+if player.at_bottom_edge:
+    player.y = 590
+
+# check against multiple shapes
+touched = player.touching_any([coin1, coin2, coin3])
+if touched:
+    delete_shape(touched)
+
+all_touching = player.touching_all([enemy, spike, lava])
+```
+
+### advanced collision
 ```python
 if check_collision(player, enemy):
     # handle
@@ -132,6 +112,106 @@ nearby = get_nearby_shapes(shape, radius=2)
 
 all_shapes = get_all_shapes()
 ```
+
+## Mouse
+
+```python
+# simple mouse object
+box.x = mouse.x - 25
+box.y = mouse.y - 25
+
+if mouse.is_down(1):  # left click
+    box.color = (255,0,0)
+
+# mouse callbacks
+def on_left_click(x, y):
+    print(f"clicked at {x}, {y}")
+
+def on_move(x, y):
+    print(f"mouse at {x}, {y}")
+
+def on_wheel(x, y):
+    print(f"scrolled {x}, {y}")
+
+on_mouse_press(1, on_left_click)   # 1=left, 2=middle, 3=right
+on_mouse_release(1, callback)
+on_mouse_move(on_move)
+on_mouse_wheel(on_wheel)
+
+if is_mouse_down(1):
+    pos = get_mouse_position()
+```
+
+## Keyboard
+
+```python
+def on_space():
+    print("Space pressed")
+
+def on_escape():
+    quit()
+
+on_key_press(KeyCode.SPACE, on_space)
+on_key_release(KeyCode.ESCAPE, on_escape)
+
+if is_key_down(KeyCode.W):
+    player.y -= 5
+```
+
+Key codes: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`
+
+## Tweens
+
+```python
+from GraphX.framework import *
+
+create_window("Tween Demo", 800, 600)
+
+box = create_shape("rectangle", 100, 300, width=50, height=50, color=(0,255,0))
+
+# create a tween
+move = tween(box, 2, {"x": 700}, EasingStyle.BOUNCE, EasingDirection.OUT)
+
+# control it
+move.play()
+move.pause()
+move.stop()
+move.speed = 0.5  # half speed
+
+# check properties
+print(move.goals)  # prints {"x": 700}
+print(move.EasingStyle)  # prints EasingStyle.BOUNCE
+print(move.EasingDirection)  # prints EasingDirection.OUT
+
+# run code when done
+def on_finished():
+    print("tween done!")
+
+move.on_complete = on_finished
+
+# color tweens
+color_tween = tween(box, 2, {"color": (0, 0, 255)}, EasingStyle.ELASTIC, EasingDirection.IN_OUT)
+
+# multiple properties at once
+tween(box, 1, {"x": 500, "y": 300, "scale_x": 2}, EasingStyle.QUAD, EasingDirection.OUT)
+
+# update tweens in your main loop
+while is_running():
+    update_tweens()
+    update()
+
+# stop all tweens
+stop_all_tweens()
+
+# cancel tweens on a specific object
+cancel_tweens(box)
+```
+
+### Easing Styles
+`LINEAR`, `QUAD`, `CUBIC`, `QUART`, `QUINT`, `SINE`, `EXPO`, `CIRC`, `BACK`, `BOUNCE`, `ELASTIC`
+
+### Easing Directions
+`IN`, `OUT`, `IN_OUT`
 
 ## Assets
 
@@ -158,6 +238,7 @@ draw_text("Hello", "main", 100, 150, color=(0,255,0), size=48)
 
 def custom_draw():
     # called every frame after shapes
+    draw_text("Score: " + str(score), None, 10, 10, size=24)
 
 set_draw_callback(custom_draw)
 
@@ -216,33 +297,21 @@ Shape parameters by type:
 
 Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `visible`
 
-### Input Functions
+### Collision Functions (SIMPLE)
 
 | Function | Description |
 |----------|-------------|
-| `on_key_press(key, callback)` | Registers callback for key press (callback gets no arguments) |
-| `on_key_release(key, callback)` | Registers callback for key release (callback gets no arguments) |
-| `on_mouse_press(button, callback)` | Registers callback for mouse press (callback gets x, y) |
-| `on_mouse_release(button, callback)` | Registers callback for mouse release (callback gets x, y) |
-| `on_mouse_move(callback)` | Registers callback for mouse movement (callback gets x, y) |
-| `on_mouse_wheel(callback)` | Registers callback for scroll wheel (callback gets scroll_x, scroll_y) |
-| `is_key_down(key)` | Returns boolean |
-| `is_mouse_down(button)` | Returns boolean |
-| `get_mouse_position()` | Returns (x, y) tuple |
+| `shape.is_touching(other)` | Checks if shape touches another shape or "borders" |
+| `shape.touching_borders()` | Checks if shape touches window edges |
+| `shape.touching_any(list)` | Returns first shape touched from a list |
+| `shape.touching_all(list)` | Returns all shapes touched from a list |
+| `shape.at_left_edge` | True if shape touches left edge |
+| `shape.at_right_edge` | True if shape touches right edge |
+| `shape.at_top_edge` | True if shape touches top edge |
+| `shape.at_bottom_edge` | True if shape touches bottom edge |
+| `shape.touching_border` | True if shape touches any edge |
 
-### Asset Functions
-
-| Function | Description |
-|----------|-------------|
-| `load(type, path, name=None, **kwargs)` | Loads asset, returns asset object. If no name given, uses filename |
-| `get_texture(name)` | Returns pygame Surface |
-| `get_sound(name)` | Returns pygame Sound |
-| `get_font(name)` | Returns pygame Font |
-| `play_sound(name, loops=0, maxtime=0, fade_ms=0)` | Plays sound |
-| `play_music(name, loops=-1, start=0, fade_ms=0)` | Plays music |
-| `stop_music()` | Stops current music |
-
-### Collision Functions
+### Collision Functions (ADVANCED)
 
 | Function | Description |
 |----------|-------------|
@@ -254,6 +323,63 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 | `raycast(x1, y1, x2, y2, shapes, ignore=None)` | Returns CollisionInfo or None |
 | `check_all_collisions(shapes)` | Returns list of collision tuples |
 | `get_nearby_shapes(shape, radius=2)` | Returns list of nearby shapes |
+
+### Mouse Functions
+
+| Function | Description |
+|----------|-------------|
+| `mouse.x` | Mouse X position |
+| `mouse.y` | Mouse Y position |
+| `mouse.pos` | Mouse position as (x, y) tuple |
+| `mouse.is_down(button)` | Returns True if button is pressed |
+| `on_mouse_press(button, callback)` | Registers callback for mouse press (callback gets x, y) |
+| `on_mouse_release(button, callback)` | Registers callback for mouse release (callback gets x, y) |
+| `on_mouse_move(callback)` | Registers callback for mouse movement (callback gets x, y) |
+| `on_mouse_wheel(callback)` | Registers callback for scroll wheel (callback gets scroll_x, scroll_y) |
+| `is_mouse_down(button)` | Returns boolean |
+| `get_mouse_position()` | Returns (x, y) tuple |
+
+### Keyboard Functions
+
+| Function | Description |
+|----------|-------------|
+| `on_key_press(key, callback)` | Registers callback for key press (callback gets no arguments) |
+| `on_key_release(key, callback)` | Registers callback for key release (callback gets no arguments) |
+| `is_key_down(key)` | Returns boolean |
+
+### Tween Functions
+
+| Function | Description |
+|----------|-------------|
+| `tween(obj, duration, goal, style, direction)` | Creates and returns a Tween object |
+| `update_tweens()` | Updates all active tweens (call in main loop) |
+| `stop_all_tweens()` | Stops all tweens |
+| `cancel_tweens(obj)` | Cancels all tweens on a specific object |
+
+Tween Methods:
+| Method | Description |
+|--------|-------------|
+| `tween.play()` | Plays or resumes the tween |
+| `tween.pause()` | Pauses the tween |
+| `tween.stop()` | Stops and cancels the tween |
+| `tween.speed` | Gets or sets the tween speed (1 = normal) |
+| `tween.goals` | Returns the goal dictionary |
+| `tween.EasingStyle` | Returns the easing style |
+| `tween.EasingDirection` | Returns the easing direction |
+| `tween.on_complete` | Set a callback for when tween finishes |
+| `tween.on_update` | Set a callback called every frame during tween |
+
+### Asset Functions
+
+| Function | Description |
+|----------|-------------|
+| `load(type, path, name=None, **kwargs)` | Loads asset, returns asset object |
+| `get_texture(name)` | Returns pygame Surface |
+| `get_sound(name)` | Returns pygame Sound |
+| `get_font(name)` | Returns pygame Font |
+| `play_sound(name, loops=0, maxtime=0, fade_ms=0)` | Plays sound |
+| `play_music(name, loops=-1, start=0, fade_ms=0)` | Plays music |
+| `stop_music()` | Stops current music |
 
 ### Drawing Functions
 
@@ -280,4 +406,4 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 
 ### KeyCode Constants
 
-All pygame key constants are exposed through `KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`.
+All pygame key constants are exposed through `KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`
