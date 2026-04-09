@@ -1,4 +1,3 @@
-
 # graphX
 
 A lightweight 2D framework
@@ -37,6 +36,7 @@ box = create_shape("rectangle", x, y, width=50, height=50, color=(255,0,0), fill
 ### circle (circ, sphere)
 ```python
 circle = create_shape("circle", x, y, radius=25, color=(0,0,255))
+# note: width and height must be equal for circles
 circle = create_shape("circle", x, y, width=50, height=50)
 ```
 
@@ -69,21 +69,43 @@ shape.apply_texture("sprite_name")
 
 ### keyboard
 ```python
-on_key_press(KeyCode.SPACE, callback)
-on_key_release(KeyCode.ESCAPE, callback)
+# callbacks receive no arguments
+def on_space():
+    print("Space pressed")
 
+on_key_press(KeyCode.SPACE, on_space)
+on_key_release(KeyCode.ESCAPE, on_escape)
+
+# polling works too
 if is_key_down(KeyCode.W):
     player.y -= 5
 ```
 
-Key codes: `SPACE`, `RETURN`, `ESCAPE`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`
+Key codes: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`
 
 ### mouse
 ```python
-on_mouse_press(1, callback)   # 1=left, 2=middle, 3=right
-on_mouse_release(1, callback)
-on_mouse_move(callback)
-on_mouse_wheel(callback)
+# mouse callbacks receive (x, y) position
+def on_left_click(x, y):
+    print(f"clicked at {x}, {y}")
+
+def on_right_click(x, y):
+    print(f"right click at {x}, {y}")
+
+on_mouse_press(1, on_left_click)   # 1=left, 2=middle, 3=right
+on_mouse_release(3, on_right_click)
+
+# mouse move gets (x, y)
+def on_move(x, y):
+    print(f"mouse at {x}, {y}")
+
+on_mouse_move(on_move)
+
+# mouse wheel gets (scroll_x, scroll_y)
+def on_wheel(x, y):
+    print(f"scrolled {x}, {y}")
+
+on_mouse_wheel(on_wheel)
 
 if is_mouse_down(1):
     pos = get_mouse_position()
@@ -107,6 +129,8 @@ result = sweep_test(bullet, vx, vy, [enemy1, enemy2])
 hit = raycast(start_x, start_y, end_x, end_y, shapes, ignore_shape=None)
 
 nearby = get_nearby_shapes(shape, radius=2)
+
+all_shapes = get_all_shapes()
 ```
 
 ## Assets
@@ -157,6 +181,7 @@ clear_all()
 quit()
 
 update_spatial_grid(shape)
+get_shape_position(shape)
 ```
 
 ## API References
@@ -179,11 +204,13 @@ update_spatial_grid(shape)
 | `create_shape(type, x, y, **kwargs)` | Creates and returns a Shape object |
 | `delete_shape(shape)` | Removes shape from engine |
 | `get_shape(id)` | Returns shape by ID or None |
+| `get_all_shapes()` | Returns list of all shapes |
+| `get_shape_position(shape)` | Returns (x, y) tuple of shape position |
 | `clear_all()` | Removes all shapes |
 
 Shape parameters by type:
 - **rectangle**: `width`, `height`, `filled`, `color`
-- **circle**: `radius` or `width`/`height`, `filled`, `color`
+- **circle**: `radius` or `width`/`height` (must be equal), `filled`, `color`
 - **oval**: `radius_x`/`radius_y` or `width`/`height`, `filled`, `color`
 - **pixel**: `color`
 
@@ -193,12 +220,12 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 
 | Function | Description |
 |----------|-------------|
-| `on_key_press(key, callback)` | Registers callback for key press |
-| `on_key_release(key, callback)` | Registers callback for key release |
-| `on_mouse_press(button, callback)` | Registers callback for mouse button press |
-| `on_mouse_release(button, callback)` | Registers callback for mouse button release |
-| `on_mouse_move(callback)` | Registers callback for mouse movement |
-| `on_mouse_wheel(callback)` | Registers callback for scroll wheel |
+| `on_key_press(key, callback)` | Registers callback for key press (callback gets no arguments) |
+| `on_key_release(key, callback)` | Registers callback for key release (callback gets no arguments) |
+| `on_mouse_press(button, callback)` | Registers callback for mouse press (callback gets x, y) |
+| `on_mouse_release(button, callback)` | Registers callback for mouse release (callback gets x, y) |
+| `on_mouse_move(callback)` | Registers callback for mouse movement (callback gets x, y) |
+| `on_mouse_wheel(callback)` | Registers callback for scroll wheel (callback gets scroll_x, scroll_y) |
 | `is_key_down(key)` | Returns boolean |
 | `is_mouse_down(button)` | Returns boolean |
 | `get_mouse_position()` | Returns (x, y) tuple |
@@ -207,7 +234,7 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 
 | Function | Description |
 |----------|-------------|
-| `load(type, path, name=None, **kwargs)` | Loads asset, returns asset object |
+| `load(type, path, name=None, **kwargs)` | Loads asset, returns asset object. If no name given, uses filename |
 | `get_texture(name)` | Returns pygame Surface |
 | `get_sound(name)` | Returns pygame Sound |
 | `get_font(name)` | Returns pygame Font |
@@ -253,5 +280,4 @@ Common parameters for all shapes: `z_index`, `rotation`, `scale_x`, `scale_y`, `
 
 ### KeyCode Constants
 
-All pygame key constants are exposed through `KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`.
-```
+All pygame key constants are exposed through `KeyCode`. Common values: `SPACE`, `RETURN`, `ESCAPE`, `BACKSPACE`, `TAB`, `DELETE`, `INSERT`, `HOME`, `END`, `PAGE_UP`, `PAGE_DOWN`, `UP`, `DOWN`, `LEFT`, `RIGHT`, `A`-`Z`, `0`-`9`, `F1`-`F12`, `LSHIFT`, `RSHIFT`, `LCTRL`, `RCTRL`, `LALT`, `RALT`.
